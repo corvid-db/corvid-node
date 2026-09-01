@@ -30,7 +30,8 @@ jobs:
       matrix:
         include:
           - { name: macos-arm64, runs-on: macos-latest }
-          - { name: macos-x64, runs-on: macos-13 }
+          # macos-x64 retired: GitHub retired macos-13 runners; no x86_64-darwin
+          # runner exists (cross-check via cargo build --target when needed)
           - { name: linux-x64, runs-on: ubuntu-latest }
           - { name: linux-arm64, runs-on: ubuntu-24.04-arm }
           - { name: windows-x64, runs-on: windows-latest }
