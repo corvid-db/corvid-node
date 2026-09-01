@@ -47,7 +47,12 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-      - run: npm ci
+      # npm install, not npm ci: the optionalDependencies platform stubs
+      # are unpublished (first publish pending, docs/PLAN.md §5), so no
+      # lockfile entries can exist for them — npm 11 (Node 24) rejects
+      # that with `npm ci`. Restore `npm ci` when the platform packages
+      # are on the registry.
+      - run: npm install
       - name: Build native binding
         run: npx napi build --platform --release --js index-native.js --dts index-native.d.ts
       - name: Golden suite (256 fixture lines through the OOP surface)
@@ -70,6 +75,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - run: npm ci
+      # See the test job: npm install until the platform stubs are published.
+      - run: npm install
       - run: npx napi build --platform --release --js index-native.js --dts index-native.d.ts
       - run: npm pack --dry-run
