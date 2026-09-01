@@ -1,0 +1,44 @@
+{
+  "name": "corvid-node",
+  "version": "0.1.0",
+  "description": "Node.js binding for the corvid embedded database — the engine compiled in, exposed as idiomatic OOP",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/i-rocky/corvid-node.git"
+  },
+  "keywords": [
+    "database",
+    "embedded",
+    "vector",
+    "search",
+    "ai",
+    "native"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "optionalDependencies": {
+    "corvid-node-darwin-arm64": "0.1.0",
+    "corvid-node-darwin-x64": "0.1.0",
+    "corvid-node-linux-arm64-gnu": "0.1.0",
+    "corvid-node-linux-x64-gnu": "0.1.0",
+    "corvid-node-win32-x64-msvc": "0.1.0"
+  },
+  "scripts": {
+    "build": "napi build --platform --release --js index-native.js --dts index-native.d.ts",
+    "build:debug": "napi build --platform --js index-native.js --dts index-native.d.ts",
+    "test": "vitest run",
+    "lint": "cargo fmt --all -- --check && cargo clippy --all-targets -- -D warnings"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.8.6",
+    "vitest": "^3.2.4"
+  }
+}
