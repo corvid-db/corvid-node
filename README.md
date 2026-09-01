@@ -81,6 +81,24 @@ TypeScript types ship in `index.d.ts`; every failure throws a
 `CorvidError` with the engine error `code` (the C ABI's frozen table,
 exported as `ErrorCode`).
 
+## Examples
+
+Six runnable programs in [`examples/`](examples/) — one per concept,
+deterministic output, executed on every CI leg:
+
+| File | What it shows |
+| --- | --- |
+| `quickstart.js` | open, insert 3 docs, kNN vector query, print |
+| `hybrid.js` | filter + vector + BM25, RRF fusion, MMR rerank, limit |
+| `vector-index.js` | in-memory / on-disk / binary-quantized HNSW vs exact, reopen |
+| `text-search.js` | BM25 ranking, English + CJK (bigram segmentation) |
+| `graph.js` | link/neighbors/traverse + the delete cascade |
+| `geo.js` | radius / bbox / nearest-k over real coordinates (haversine km) |
+
+```sh
+npm run build && node examples/hybrid.js
+```
+
 ## Value mapping
 
 | JS | engine |

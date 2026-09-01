@@ -52,6 +52,12 @@ jobs:
         run: npx napi build --platform --release --js index-native.js --dts index-native.d.ts
       - name: Golden suite (256 fixture lines through the OOP surface)
         run: npx vitest run
+      - name: Examples tour (six runnable programs, deterministic output)
+        run: |
+          for ex in quickstart hybrid vector-index text-search graph geo; do
+            echo "== examples/${ex}.js =="
+            node "examples/${ex}.js"
+          done
 
   package:
     name: npm pack dry-run
