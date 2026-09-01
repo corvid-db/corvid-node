@@ -2,10 +2,10 @@
 
 Date: 2026-09-01 · Status: bootstrap complete (this document) ·
 Controller plan: `docs/superpowers/plans/2026-08-31-corvid-ffi.md` in
-the engine repo (i-rocky/corvid).
+the engine repo (corvid-db/corvid).
 
 corvid-node is the Node.js binding for
-[corvid](https://github.com/i-rocky/corvid), Phase 1 of the bindings
+[corvid](https://github.com/corvid-db/corvid), Phase 1 of the bindings
 program (alongside corvid-c). It follows the locked program rules:
 **golden-suite port before ergonomic sugar**, OOP idiom gate (handles →
 native classes, FFI symbols never in the public API), exact engine-tag
@@ -34,7 +34,7 @@ the counted total instead of silently passing).
 Two architectures were on the table:
 
 1. **(chosen)** A Rust napi crate that links the engine crate directly
-   (`corvid = { git = "https://github.com/i-rocky/corvid.git", tag = "v0.2.1" }`
+   (`corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.2.1" }`
    — corvid is not on crates.io) and exposes the OOP surface through
    napi classes.
 2. JS-side FFI (koffi/ffi-napi) against the release `cdylib`

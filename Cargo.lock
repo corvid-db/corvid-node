@@ -26,7 +26,7 @@ dependencies = [
 [[package]]
 name = "corvid"
 version = "0.2.1"
-source = "git+https://github.com/i-rocky/corvid.git?tag=v0.2.1#edc1bc0357895bad91440c7c56bab4ab3ab2e54a"
+source = "git+https://github.com/corvid-db/corvid.git?tag=v0.2.1#edc1bc0357895bad91440c7c56bab4ab3ab2e54a"
 dependencies = [
  "redb",
  "thiserror",

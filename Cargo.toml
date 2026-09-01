@@ -5,7 +5,7 @@ edition = "2021"
 rust-version = "1.88"
 license = "MIT"
 description = "Node.js binding for the corvid embedded database — the engine compiled in via napi-rs, exposed as idiomatic OOP"
-repository = "https://github.com/i-rocky/corvid-node"
+repository = "https://github.com/corvid-db/corvid-node"
 keywords = ["database", "embedded", "vector", "search", "napi"]
 categories = ["database-implementations"]
 
@@ -20,7 +20,7 @@ napi-derive = "3"
 
 # The engine, pinned to the exact release tag (docs/PLAN.md §2: the
 # binding pins exact engine tags; corvid is not on crates.io).
-corvid = { git = "https://github.com/i-rocky/corvid.git", tag = "v0.2.1" }
+corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.2.1" }
 
 [build-dependencies]
 napi-build = "2"

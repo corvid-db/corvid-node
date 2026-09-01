@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/i-rocky/corvid-node.git"
+    "url": "git+https://github.com/corvid-db/corvid-node.git"
   },
   "keywords": [
     "database",

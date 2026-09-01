@@ -1,6 +1,6 @@
 # corvid-node
 
-Node.js binding for [corvid](https://github.com/i-rocky/corvid) — an
+Node.js binding for [corvid](https://github.com/corvid-db/corvid) — an
 embedded database with typed values, vector/text/hybrid search, graph
 edges, geo, TTL, and schemas. The engine is compiled in (a Rust napi
 crate pinned to an exact corvid release tag) and exposed as idiomatic
