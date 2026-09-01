@@ -22,7 +22,7 @@
     "index.d.ts"
   ],
   "engines": {
-    "node": ">= 18"
+    "node": ">= 20"
   },
   "optionalDependencies": {
     "corvid-node-darwin-arm64": "0.1.0",
@@ -39,6 +39,6 @@
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.8.6",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.11"
   }
 }

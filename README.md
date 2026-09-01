@@ -32,7 +32,8 @@ build from source.
 Prebuilt binaries (`optionalDependencies`) cover
 `darwin-arm64` / `darwin-x64` / `linux-x64-gnu` / `linux-arm64-gnu` /
 `win32-x64-msvc`. Other platforms (musl, windows-arm64) build from
-source — Rust ≥ 1.88 + a C toolchain:
+source — Node ≥ 20 (CI exercises 24/22/20), Rust ≥ 1.88 + a C
+toolchain:
 
 ```sh
 npm run build

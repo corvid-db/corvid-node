@@ -14,7 +14,7 @@ jobs:
     name: fmt + clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -23,11 +23,15 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
 
   test:
-    name: golden suite — ${{ matrix.name }}
+    name: golden suite — ${{ matrix.name }} / node${{ matrix.node }}
     needs: lint
     strategy:
       fail-fast: false
       matrix:
+        # Toolchain policy (scripts/bindings/README.md, engine repo):
+        # modern minimums (engines >= 20; 18 is EOL), CI tests latest +
+        # previous lines — 24 (current), 22 (LTS), 20 (floor).
+        node: [24, 22, 20]
         include:
           - { name: macos-arm64, runs-on: macos-latest }
           # macos-x64 retired: GitHub retired macos-13 runners; no x86_64-darwin
@@ -37,12 +41,12 @@ jobs:
           - { name: windows-x64, runs-on: windows-latest }
     runs-on: ${{ matrix.runs-on }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
       - run: npm ci
       - name: Build native binding
         run: npx napi build --platform --release --js index-native.js --dts index-native.d.ts
@@ -54,12 +58,12 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
       - run: npm ci
       - run: npx napi build --platform --release --js index-native.js --dts index-native.d.ts
       - run: npm pack --dry-run
