@@ -29,6 +29,10 @@
 //! interop (filters, ordering, unique equality) treats `2` and `2.0`
 //! as the same value, so the collapse is behavior-preserving; the
 //! group-aggregation key tags (`i:2` vs `f:0.5`) remain observable.
+//!
+//! Both directions carry a nesting-depth cap (`MAX_DEPTH`): deeper
+//! values (or cyclic JS input) convert to a clean InvalidArgument
+//! error rather than recursing toward a native stack overflow.
 
 use std::collections::BTreeMap;
 
@@ -42,6 +46,13 @@ use napi::JsValue;
 use crate::error::{CResult, CorvidErr, ErrCode};
 
 const MAX_SAFE: i64 = 9_007_199_254_740_991; // 2^53 - 1
+
+/// Maximum container nesting the converters will walk. Deeper input
+/// (including cyclic JS objects, which are depth-unbounded) maps to a
+/// clean InvalidArgument instead of risking a native stack overflow;
+/// engine values deeper than this (only constructible via a crafted
+/// dump replay) fail the same way on the way out.
+const MAX_DEPTH: usize = 512;
 
 /// Lift a napi-layer error into `CorvidErr` (code 12 — argument).
 pub fn napi_wrap(e: napi::Error) -> CorvidErr {
@@ -57,14 +68,33 @@ fn argument(msg: &str) -> CorvidErr {
 
 /// Convert an arbitrary JS value into an engine `Value`.
 pub fn value_from_js(u: &Unknown) -> CResult<Value> {
+    value_from_js_at(u, 0)
+}
+
+fn too_deep() -> CorvidErr {
+    argument(&format!(
+        "value nesting exceeds the maximum depth of {MAX_DEPTH}"
+    ))
+}
+
+fn value_from_js_at(u: &Unknown, depth: usize) -> CResult<Value> {
+    if depth > MAX_DEPTH {
+        return Err(too_deep());
+    }
     match u.get_type().map_err(napi_wrap)? {
         ValueType::Null | ValueType::Undefined => Ok(Value::Null),
         ValueType::Boolean => Ok(Value::Bool(bool::from_unknown(*u).map_err(napi_wrap)?)),
         ValueType::Number => {
             let n = f64::from_unknown(*u).map_err(napi_wrap)?;
+            // Int iff finite, integral, within ±2^53, and NOT -0.0 (the
+            // only negative that must fall through to Float: `2` and
+            // `2.0` collapse, but Int(0) and Float(-0.0) stay distinct
+            // kinds — CAS/unique equality and group-key tags observe
+            // the difference). Every other negative integer (-5, -9…) is
+            // a plain Int, matching the other bindings.
             if n.is_finite()
                 && n.fract() == 0.0
-                && !n.is_sign_negative()
+                && !(n == 0.0 && n.is_sign_negative())
                 && n.abs() <= MAX_SAFE as f64
             {
                 Ok(Value::Int(n as i64))
@@ -101,7 +131,7 @@ pub fn value_from_js(u: &Unknown) -> CResult<Value> {
                 let items: Vec<Unknown> = Vec::from_unknown(*u).map_err(napi_wrap)?;
                 let mut out = Vec::with_capacity(items.len());
                 for item in &items {
-                    out.push(value_from_js(item)?);
+                    out.push(value_from_js_at(item, depth + 1)?);
                 }
                 return Ok(Value::Array(out));
             }
@@ -123,7 +153,7 @@ pub fn value_from_js(u: &Unknown) -> CResult<Value> {
                     .get::<Unknown>(&key)
                     .map_err(napi_wrap)?
                     .ok_or_else(|| argument("property vanished while reading an object"))?;
-                map.insert(key, value_from_js(&val)?);
+                map.insert(key, value_from_js_at(&val, depth + 1)?);
             }
             Ok(Value::Map(map))
         }
@@ -136,6 +166,13 @@ pub fn value_from_js(u: &Unknown) -> CResult<Value> {
 /// Convert an engine `Value` into a JS value (see the module docs for
 /// the mapping and its fidelity notes).
 pub fn value_to_js(env: &Env, v: &Value) -> CResult<Unknown<'static>> {
+    value_to_js_at(env, v, 0)
+}
+
+fn value_to_js_at(env: &Env, v: &Value, depth: usize) -> CResult<Unknown<'static>> {
+    if depth > MAX_DEPTH {
+        return Err(too_deep());
+    }
     match v {
         Value::Null => out(env, Null),
         Value::Bool(b) => out(env, *b),
@@ -153,14 +190,14 @@ pub fn value_to_js(env: &Env, v: &Value) -> CResult<Unknown<'static>> {
         Value::Array(items) => {
             let mut xs: Vec<Unknown> = Vec::with_capacity(items.len());
             for item in items {
-                xs.push(value_to_js(env, item)?);
+                xs.push(value_to_js_at(env, item, depth + 1)?);
             }
             out(env, xs)
         }
         Value::Map(map) => {
             let mut obj = Object::new(env).map_err(napi_wrap)?;
             for (k, val) in map {
-                obj.set(k.as_str(), value_to_js(env, val)?)
+                obj.set(k.as_str(), value_to_js_at(env, val, depth + 1)?)
                     .map_err(napi_wrap)?;
             }
             out(env, obj)
