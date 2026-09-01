@@ -1,0 +1,15 @@
+# Rust
+/target
+
+# Node
+node_modules/
+*.log
+
+# napi build artifacts (the platform binary and the generated loader
+# are rebuilt per platform; published via the platform matrix, not git)
+*.node
+index-native.js
+index-native.d.ts
+
+# test scratch
+test/work/

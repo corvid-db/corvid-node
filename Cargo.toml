@@ -1,0 +1,30 @@
+[package]
+name = "corvid-node"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+license = "MIT"
+description = "Node.js binding for the corvid embedded database — the engine compiled in via napi-rs, exposed as idiomatic OOP"
+repository = "https://github.com/i-rocky/corvid-node"
+keywords = ["database", "embedded", "vector", "search", "napi"]
+categories = ["database-implementations"]
+
+# The cdylib Node loads. Package artifacts and the platform matrix are
+# managed by @napi-rs/cli (see package.json scripts and docs/PLAN.md).
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "3", features = ["napi8", "compat-mode"] }
+napi-derive = "3"
+
+# The engine, pinned to the exact release tag (docs/PLAN.md §2: the
+# binding pins exact engine tags; corvid is not on crates.io).
+corvid = { git = "https://github.com/i-rocky/corvid.git", tag = "v0.2.1" }
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
+strip = "symbols"
