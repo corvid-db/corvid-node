@@ -93,3 +93,35 @@ test('M7: deeply nested values throw InvalidArgument (depth cap), not a native c
   expect(c.get('shallow'), 'M7: under-cap round trip').toEqual({ shallow });
   c.close();
 });
+
+// ---------------------------------------------------------------------------
+// The frozen error-code table (docs/SURFACE.tsv: the corvid::Error rows).
+// The fixtures prove the codes the suite can trigger (err:10/11/12/14/15/17);
+// the redb-internal fault variants have no public trigger (engine radar
+// exempts them), so the table itself is the proof every variant maps to its
+// frozen code (FFI.md §1.3: values are never renumbered).
+// ---------------------------------------------------------------------------
+
+test('error-code table is frozen (every engine Error variant maps to its documented code)', () => {
+  expect(ErrorCode, 'the frozen table, verbatim').toEqual({
+    Database: 1,
+    Transaction: 2,
+    Table: 3,
+    Storage: 4,
+    Commit: 5,
+    SetDurability: 6,
+    Compaction: 7,
+    Decode: 8,
+    CorruptIndex: 9,
+    ReservedCollection: 10,
+    InvalidName: 11,
+    InvalidArgument: 12,
+    IncompatibleFormat: 13,
+    EmptyIndexTraining: 14,
+    SchemaViolation: 15,
+    InvalidDump: 16,
+    BackupTargetExists: 17,
+    Io: 18,
+    Busy: 19, // FFI-only: compact exclusivity, no engine Error variant
+  });
+});

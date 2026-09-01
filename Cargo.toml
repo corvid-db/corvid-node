@@ -20,7 +20,7 @@ napi-derive = "3"
 
 # The engine, pinned to the exact release tag (docs/PLAN.md §2: the
 # binding pins exact engine tags; corvid is not on crates.io).
-corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.2.1" }
+corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.2.2" }
 
 [build-dependencies]
 napi-build = "2"

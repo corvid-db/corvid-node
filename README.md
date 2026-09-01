@@ -118,6 +118,17 @@ Buffers. One reserved corner: the `CorvidFloat` protocol consumes any
 plain object whose single own key is `__corvidFloat` — such an object
 maps to a Float, not a Map (rename the field or add a second key).
 
+## Surface manifest (docs/SURFACE.tsv)
+
+Every construct of the engine's public surface (the radar-enforced list the
+engine publishes as `scripts/bindings/surface.tsv` at each release tag) is
+resolved in `docs/SURFACE.tsv`: the JS API exposing it plus the test that
+proves it (golden fixture line references), or `N/A` + reason where the v1
+binding deliberately does not expose it. `scripts/surface-gate.sh` fails CI
+when a line is unresolved, a cell is empty, or the N/A count drifts from the
+committed baseline — so an engine pin bump that changes the surface lands in
+this gate, not in a user's bug report.
+
 ## Development
 
 ```sh

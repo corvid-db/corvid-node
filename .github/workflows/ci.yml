@@ -10,6 +10,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  surface-gate:
+    # docs/SURFACE.tsv vs the engine's surface list at the PINNED tag:
+    # every engine construct mapped (binding api + proving test) or N/A
+    # with a reason; N/A count pinned to the committed baseline.
+    name: surface gate (SURFACE.tsv vs pinned engine)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve docs/SURFACE.tsv against the pinned engine surface
+        run: ./scripts/surface-gate.sh
+
   lint:
     name: fmt + clippy
     runs-on: ubuntu-latest
