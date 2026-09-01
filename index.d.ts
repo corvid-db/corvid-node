@@ -66,7 +66,10 @@ export declare class CorvidError extends Error {
  * Forces the engine Float kind for an integer-valued double (JS `2`
  * maps to Int). The distinction is observable in compare-and-set /
  * unique equality against stored floats and in group-aggregation key
- * tags.
+ * tags. Escape-hatch cost: a plain object whose single own key is
+ * `__corvidFloat` is consumed by the marker protocol, so such an
+ * object cannot itself be stored as a Map (rename the field or add a
+ * second key).
  */
 export declare class CorvidFloat {
   constructor(value: number);
@@ -96,20 +99,20 @@ export interface SchemaField {
 }
 
 export interface Row {
-  key: string;
+  key: Key;
   doc: any;
   score: number;
 }
 
 export interface GeoHit {
-  key: string;
+  key: Key;
   doc: any;
   distanceKm: number;
 }
 
 export interface Page {
-  rows: { key: string; doc: any }[];
-  next: string | null;
+  rows: { key: Key; doc: any }[];
+  next: Key | null;
 }
 
 /** A database handle. */
@@ -150,12 +153,14 @@ export declare class Collection {
   /** Bulk atomic insert (`put_many`): one transaction; a violating pair rolls the whole batch back. */
   insertMany(entries: [Key, unknown][]): void;
   /** Insert with an engine-generated key (20-digit, strictly monotonic per collection); returns the key. */
-  insertAuto(doc: unknown): string;
+  insertAuto(doc: unknown): Key;
   /**
    * Read-modify-write: the callback receives the current document (or
    * `null` when absent) and returns the new document — `null` to
    * delete. A throwing callback aborts (InvalidArgument) and writes
-   * nothing.
+   * nothing. The callback must NOT call methods on this same
+   * Collection: the handle's lock is non-reentrant (the FFI's portable
+   * contract), so a reentrant call deadlocks.
    */
   update(key: Key, fn: (current: any) => unknown): void;
   /** Merge the top-level fields of `patch` into the document at `key` (creating it if absent). */
@@ -181,9 +186,14 @@ export declare class Collection {
   /** The document at `key`, or `null` when absent. */
   get(key: Key): any;
   /** Every `{ key, doc }` in key order. */
-  scan(): { key: string; doc: any }[];
-  /** Stream with a callback; returning `false` stops early. Returns the rows visited. */
-  scanEach(cb: (key: string, doc: any) => boolean | void): number;
+  scan(): { key: Key; doc: any }[];
+  /**
+   * Stream with a callback; returning `false` stops early. Returns the
+   * rows visited. The callback must NOT call methods on this same
+   * Collection: the handle's lock is non-reentrant (the FFI's portable
+   * contract), so a reentrant call deadlocks.
+   */
+  scanEach(cb: (key: Key, doc: any) => boolean | void): number;
   /** Keyset pagination: up to `limit` rows strictly after `after`. */
   page(after: Key | null, limit: number): Page;
   len(): number;
@@ -207,11 +217,11 @@ export declare class Collection {
   linkWeighted(from: Key, relation: string, to: Key, weight: number): void;
   /** Remove an edge; returns whether it existed. */
   unlink(from: Key, relation: string, to: Key): boolean;
-  neighbors(from: Key, relation: string): string[];
-  inNeighbors(to: Key, relation: string): string[];
-  neighborsWeighted(from: Key, relation: string): { key: string; weight: number }[];
+  neighbors(from: Key, relation: string): Key[];
+  inNeighbors(to: Key, relation: string): Key[];
+  neighborsWeighted(from: Key, relation: string): { key: Key; weight: number }[];
   /** BFS `hops` out over `relation` (cycle-safe). */
-  traverse(start: Key, relation: string, hops: number): string[];
+  traverse(start: Key, relation: string, hops: number): Key[];
   geoWithinRadius(field: string, lat: number, lon: number, radiusKm: number): GeoHit[];
   geoWithinBBox(field: string, minLat: number, minLon: number, maxLat: number, maxLon: number): GeoHit[];
   geoNearest(field: string, lat: number, lon: number, k: number): GeoHit[];
@@ -255,7 +265,10 @@ export declare class Query {
   max(field: string): any;
   /**
    * Group counts; keys use the engine's group-key formatting (text
-   * bare, int/float type-tagged `i:1` / `f:0.5`), in ascending order.
+   * bare, int/float type-tagged `i:1` / `f:0.5`), in ascending order —
+   * `Object.keys()`/entries preserve that order, except that
+   * array-index-like text keys (e.g. `42`) are hoisted to the front by
+   * JS numeric-key ordering; lookups by key are unaffected.
    */
   groupCount(field: string): Record<string, number>;
   groupSum(groupField: string, valueField: string): Record<string, number>;

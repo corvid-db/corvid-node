@@ -311,7 +311,9 @@ class Collection {
    * Read-modify-write: the callback receives the current document (or
    * `null` when absent) and returns the new document — `null`/`undefined`
    * to delete. A throwing callback aborts (InvalidArgument) and writes
-   * nothing.
+   * nothing. The callback must NOT call methods on this same
+   * Collection: the handle's lock is non-reentrant (the FFI's portable
+   * contract), so a reentrant call deadlocks.
    */
   update(key, fn) {
     call(this.#node.update, this.#node, [key, fn]);
@@ -383,6 +385,9 @@ class Collection {
   /**
    * Stream with a callback `(key, doc) => boolean` — returning `false`
    * stops the walk early (not an error). Returns the rows visited.
+   * The callback must NOT call methods on this same Collection: the
+   * handle's lock is non-reentrant (the FFI's portable contract), so a
+   * reentrant call deadlocks.
    */
   scanEach(cb) {
     return call(this.#node.scanCb, this.#node, [cb]);
@@ -681,7 +686,10 @@ class Query {
   /**
    * Group counts; the returned object's keys are the engine's group-key
    * formatting (text bare, int/float type-tagged `i:1` / `f:0.5`),
-   * in ascending order.
+   * in ascending order — `Object.keys()`/entries preserve that order,
+   * except that array-index-like text keys (e.g. `42`) are hoisted to
+   * the front by JS numeric-key ordering; lookups by key are
+   * unaffected.
    */
   groupCount(field) {
     return call(() => Object.fromEntries(this.#node.groupCount(field)), null, []);

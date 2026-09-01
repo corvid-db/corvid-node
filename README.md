@@ -25,6 +25,10 @@ equality rules, TTL, transactions) each have a section there.
 npm i corvid-node
 ```
 
+Pending first publish: the package is not on npm yet — publishing waits
+on the platform packages existing first (docs/PLAN.md §5); until then,
+build from source.
+
 Prebuilt binaries (`optionalDependencies`) cover
 `darwin-arm64` / `darwin-x64` / `linux-x64-gnu` / `linux-arm64-gnu` /
 `win32-x64-msvc`. Other platforms (musl, windows-arm64) build from
@@ -91,7 +95,9 @@ Reading back: Int → `number` (or `bigint` beyond ±2^53), Float →
 `number` with f64 bits preserved **except NaN payloads**, which V8
 canonicalizes at the N-API number boundary (`-0.0`, `±inf` are exact;
 vector elements keep their f32 bits). Keys are strings (UTF-8) or
-Buffers.
+Buffers. One reserved corner: the `CorvidFloat` protocol consumes any
+plain object whose single own key is `__corvidFloat` — such an object
+maps to a Float, not a Map (rename the field or add a second key).
 
 ## Development
 
