@@ -13,6 +13,12 @@ Its correctness story is the engine's **golden suite**: the same
 against this binding's public API on every CI run
 (`test/golden.spec.ts`).
 
+**Documentation:** the [corvid docs site](https://corvid-db.github.io/docs/)
+is canonical — this binding has its own
+[corvid-node page](https://corvid-db.github.io/docs/bindings/corvid-node/),
+and the engine concepts behind the API (query builder semantics, indexes,
+equality rules, TTL, transactions) each have a section there.
+
 ## Install
 
 ```sh
