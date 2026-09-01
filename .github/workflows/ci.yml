@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Resolve docs/SURFACE.tsv against the pinned engine surface
         run: ./scripts/surface-gate.sh
 
@@ -35,22 +35,28 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
 
   test:
-    name: golden suite — ${{ matrix.name }} / node${{ matrix.node }}
+    name: golden suite — ${{ matrix.target }} / node${{ matrix.node }}
     needs: lint
     strategy:
       fail-fast: false
       matrix:
         # Toolchain policy (scripts/bindings/README.md, engine repo):
         # modern minimums (engines >= 20; 18 is EOL), CI tests latest +
-        # previous lines — 24 (current), 22 (LTS), 20 (floor).
+        # previous lines — 24 (current), 22 (LTS), 20 (floor) — across
+        # every platform leg (same shape as corvid-python's matrix).
+        # The include rows MUST carry `target` (a matrix key): a bare
+        # include row without one merges into every combination instead
+        # of multiplying — that collapsed an earlier revision of this
+        # matrix to windows-only legs.
         node: [24, 22, 20]
+        target: [macos-arm64, linux-x64, linux-arm64, windows-x64]
         include:
-          - { name: macos-arm64, runs-on: macos-latest }
           # macos-x64 retired: GitHub retired macos-13 runners; no x86_64-darwin
           # runner exists (cross-check via cargo build --target when needed)
-          - { name: linux-x64, runs-on: ubuntu-latest }
-          - { name: linux-arm64, runs-on: ubuntu-24.04-arm }
-          - { name: windows-x64, runs-on: windows-latest }
+          - { target: macos-arm64, runs-on: macos-latest }
+          - { target: linux-x64, runs-on: ubuntu-latest }
+          - { target: linux-arm64, runs-on: ubuntu-24.04-arm }
+          - { target: windows-x64, runs-on: windows-latest }
     runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v7
