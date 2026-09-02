@@ -714,6 +714,37 @@ impl CollectionNode {
         Ok(self.geo_hits(&env, hits)?)
     }
 
+    /// DIRECT positional text search (spec §4.6's erratum, engine
+    /// v0.3.0's ABI addition; this binding calls the engine method
+    /// directly — no query handle): documents whose `field` TEXT holds
+    /// `phrase` as a consecutive, IN-ORDER run of analyzed tokens, most
+    /// relevant first, ties by key, up to `k`. Rows as
+    /// `(key, doc, score)` where score is the hit's BM25 phrase sum
+    /// (the phrase scale, NOT the builder's fused RRF scale). `k == 0`
+    /// answers `[]` — inert, never an error.
+    #[napi]
+    pub fn phrase_search(
+        &self,
+        env: Env,
+        field: String,
+        phrase: String,
+        k: u32,
+    ) -> napi::Result<Vec<(Unknown<'static>, Unknown<'static>, f32)>> {
+        let hits = self.with_coll(|coll| {
+            coll.phrase_search(&field, &phrase, k as usize)
+                .map_err(CorvidErr::from)
+        })?;
+        let mut out = Vec::with_capacity(hits.len());
+        for hit in hits {
+            out.push((
+                key_to_js(&env, &hit.key)?,
+                value_to_js(&env, &hit.document)?,
+                hit.score,
+            ));
+        }
+        Ok(out)
+    }
+
     // -- queries ----------------------------------------------------------------
 
     /// Begin a query over this collection (a derived handle; close it

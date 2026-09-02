@@ -10,11 +10,10 @@
 // matches by its bigrams — "城市" (city) matches both city notes,
 // "数据库" (database) matches the ML note.
 //
-// Note on phrase matching: the engine's native (Rust) API also has a
-// positional `phrase_search` (adjacent-token windows over stored
-// positions); this binding follows the C ABI v1, which exposes the
-// BM25 source only — positional semantics are beyond its surface;
-// this example shows the bag-of-words ranking that IS the contract.
+// Phrase matching: engine v0.3.0 added the DIRECT positional search
+// to the ABI (consecutive in-order analyzed tokens, stop words
+// collapsing out of adjacency), surfaced here as phraseSearch() —
+// score is the BM25 phrase sum, not the builder's fused RRF scale.
 //
 // Run: node examples/text-search.js   (after `npm run build`)
 
@@ -40,10 +39,20 @@ function search(query, label) {
   console.log(label.padEnd(28), '->', parts.join(' '));
 }
 
+function phrase(query, label) {
+  const rows = notes.phraseSearch('body', query, 3);
+  const parts = rows.map(({ key, score }) => `${key}(${score.toFixed(6)})`);
+  console.log(label.padEnd(28), '->', parts.join(' '));
+}
+
 search('quick fox', 'bm25 "quick fox":');
 search('quick dog', 'bm25 "quick dog":');
 search('城市', 'bm25 CJK 城市 (city):');
 search('数据库', 'bm25 CJK 数据库 (database):');
+
+phrase('fox jumps over', 'phrase "fox jumps over":');
+phrase('over jumps fox', 'phrase reversed (no match):');
+phrase('leaps over a sleeping', 'phrase stop words collapsed:');
 
 notes.close();
 db.close();

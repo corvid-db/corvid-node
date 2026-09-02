@@ -200,6 +200,14 @@ export declare class Collection {
   isEmpty(): boolean;
   createScalarIndex(field: string): void;
   createCompoundIndex(fields: string[]): void;
+  /**
+   * DIRECT positional phrase search (engine v0.3.0; no query builder):
+   * consecutive, in-order analyzed tokens; stop words collapse out of
+   * adjacency. Most relevant first, ties by key, up to `k` rows;
+   * `score` is the BM25 phrase sum. `k === 0` answers `[]` — inert.
+   */
+  phraseSearch(field: string, phrase: string, k: number): Array<{ key: string; doc: unknown; score: number }>;
+
   createTextIndex(field: string): void;
   createTextIndexOndisk(field: string): void;
   createGeoIndex(field: string): void;

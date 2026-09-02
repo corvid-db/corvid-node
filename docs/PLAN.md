@@ -22,7 +22,7 @@ later, decided by the FFI bench).
 | The golden-suite port | `test/golden.spec.ts` driving `test/golden/*.txt` (vendored verbatim from the v0.2.1 release — the same fixtures the C smoke suite runs) |
 | CI | `.github/workflows/ci.yml` — lint + build + golden suite × 4 platform legs (macos-arm64, linux-x64, linux-arm64, windows-x64; macos-x64 was retired with GitHub's macos-13 runners — no x86_64-darwin runner exists) |
 
-The golden suite: **256/256 fixture lines** across 8 files
+The golden suite: **267/267 fixture lines** across 8 files
 (values 42, mutations 70, queries 40, schema 28, graph 20, geo 19,
 persist 13, admin 24), every line dispatched and every expectation
 checked through the OOP surface, with the same independent pre-scan
