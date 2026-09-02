@@ -1,6 +1,6 @@
 {
   "name": "corvid-node",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Node.js binding for the corvid embedded database \u2014 the engine compiled in, exposed as idiomatic OOP",
   "license": "MIT",
   "repository": {
