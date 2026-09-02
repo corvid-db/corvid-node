@@ -12,8 +12,14 @@ name: Release npm
 # job), and `napi pre-publish` keeps the platform-package versions and the
 # root's optionalDependencies in sync with what it publishes.
 #
-# Requires the NPM_TOKEN secret (automation token of the publishing
-# account). Without it the publish job fails at the first npm publish.
+# Publishes via npm trusted publishing (docs.npmjs.com/trusted-publishers):
+# id-token: write lets the npm CLI (>= 11.5.1, bundled with the Node 24 the
+# jobs install) pick up the GitHub OIDC token automatically — `napi
+# pre-publish` shells out to plain `npm publish` per package, no
+# NODE_AUTH_TOKEN/NPM_TOKEN secret. npm links trusted publishers PER PACKAGE
+# (one each, no scope patterns): corvid-node and every corvid-node-<platform>
+# package needs its own one-time linkage on npmjs.com (see
+# scripts/bindings/README.md in the engine repo).
 on:
   push:
     tags:
@@ -73,6 +79,14 @@ jobs:
     name: publish platform packages, then the root package
     needs: build
     runs-on: ubuntu-latest
+    # npm trusted publishing: the CLI detects the OIDC environment and
+    # exchanges the token itself (also for the npm publish invocations napi
+    # pre-publish shells out to). Job-level permissions REPLACE the
+    # workflow-level set, so contents: read is restated for checkout +
+    # the same-run artifact download below.
+    permissions:
+      id-token: write # OIDC for `npm publish`
+      contents: read
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -100,6 +114,6 @@ jobs:
             fi
           fi
       - name: Publish (platform packages, then corvid-node)
+        # shells out to plain `npm publish`, which picks up the OIDC token
+        # by itself (docs.npmjs.com/trusted-publishers); no NODE_AUTH_TOKEN
         run: npx napi pre-publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

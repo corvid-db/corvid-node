@@ -25,11 +25,10 @@ equality rules, TTL, transactions) each have a section there.
 npm i corvid-node
 ```
 
-Pending first publish: the release pipeline is wired
-(`.github/workflows/release.yml` — a `npm-publish-v*` tag push builds
-the platform matrix and publishes `corvid-node-<platform>` then this
-package, docs/PLAN.md §5) but it waits on the repo's `NPM_TOKEN`
-secret being set. Until then, build from source.
+Published to npm by the release workflow (`.github/workflows/release.yml`
+— a tag push builds the platform matrix and publishes
+`corvid-node-<platform>` then this package, docs/PLAN.md §5) via npm
+trusted publishing — no registry token secret involved.
 
 Prebuilt binaries (`optionalDependencies`) cover
 `darwin-arm64` / `darwin-x64` / `linux-x64-gnu` / `linux-arm64-gnu` /
