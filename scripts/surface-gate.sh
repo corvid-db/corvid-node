@@ -42,7 +42,7 @@ for cand in "$ROOT/fetch.sh" "$ROOT/Cargo.toml"; do
     if [ -f "$cand" ]; then
         p="$(awk -F'"' '
             /^CORVID_VERSION="/ { print $2; exit }
-            /^corvid = \{ git = / && match($0, /tag = "v[0-9]+\.[0-9]+\.[0-9]+"/) {
+            /^corvid-db = \{ git = / && match($0, /tag = "v[0-9]+\.[0-9]+\.[0-9]+"/) {
                 s = substr($0, RSTART, RLENGTH); sub(/^tag = "/, "", s); sub(/"$/, "", s); print s; exit
             }' "$cand")"
         if [ -n "$p" ]; then pin="$p"; break; fi
