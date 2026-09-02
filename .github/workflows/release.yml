@@ -68,19 +68,28 @@ jobs:
       - run: npm install
       - name: Build ${{ matrix.target }}
         run: npx napi build --release --target ${{ matrix.target }} --js index-native.js --dts index-native.d.ts
-      # The crate's cdylib is named libcorvid_node (crate name), but the
-      # napi artifacts pipeline expects index.<target>.node — copy it into
-      # place explicitly (napi build does not rename cross-named cdylibs;
-      # the pre-OIDC dry-run passed on a stale local index.*.node).
+      # The crate's cdylib is named libcorvid_node (crate name) and napi
+      # build does not rename cross-named cdylibs — copy it into place
+      # explicitly, named by platformArchABI (napi's convention), NOT the
+      # rust triple: index.darwin-arm64.node, not index.aarch64-apple-darwin.node.
       - name: Normalize the cdylib name for the artifacts pipeline
         shell: bash
         run: |
           set -euo pipefail
-          ext="so"; case "${{ matrix.target }}" in *-apple-darwin) ext="dylib";; *-windows*) ext="dll";; esac
-          src="target/${{ matrix.target }}/release"
+          t="${{ matrix.target }}"
+          case "$t" in
+            aarch64-apple-darwin)      abi="darwin-arm64" ;;
+            x86_64-apple-darwin)       abi="darwin-x64" ;;
+            aarch64-unknown-linux-gnu) abi="linux-arm64-gnu" ;;
+            x86_64-unknown-linux-gnu)  abi="linux-x64-gnu" ;;
+            x86_64-pc-windows-msvc)    abi="win32-x64-msvc" ;;
+            *) echo "::error::unmapped target $t"; exit 1 ;;
+          esac
+          ext="so"; case "$t" in *-apple-darwin) ext="dylib";; *-windows*) ext="dll";; esac
+          src="target/$t/release"
           if [ "$ext" = "dll" ]; then f="$src/corvid_node.dll"; else f="$src/libcorvid_node.$ext"; fi
-          [ -f "$f" ] || f="$src/index.$ext"
-          cp "$f" "index.${{ matrix.target }}.node"
+          [ -f "$f" ] || { echo "::error::$f not found"; ls -la "$src" | head; exit 1; }
+          cp "$f" "index.$abi.node"
       - name: Upload binding
         uses: actions/upload-artifact@v4
         with:
