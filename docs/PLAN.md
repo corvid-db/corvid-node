@@ -34,7 +34,7 @@ the counted total instead of silently passing).
 Two architectures were on the table:
 
 1. **(chosen)** A Rust napi crate that links the engine crate directly
-   (`corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.3.0" }`
+   (`corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.3.1" }`
    — corvid is not on crates.io) and exposes the OOP surface through
    napi classes.
 2. JS-side FFI (koffi/ffi-napi) against the release `cdylib`
