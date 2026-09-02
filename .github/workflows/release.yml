@@ -5,11 +5,19 @@ name: Release npm
 # `napi artifacts` and runs `napi pre-publish` — platform packages
 # (corvid-node-<platform>) first, then the root corvid-node facade.
 #
+# Trigger: plain `v*` tags (the org-wide cascade — scripts/bindings/
+# bump.sh --release-after-merge pushes vX.Y.Z here, matching every other
+# binding repo) AND the historical `npm-publish-v*` shape. Either way the
+# version part must equal package.json's version (guard in the publish
+# job), and `napi pre-publish` keeps the platform-package versions and the
+# root's optionalDependencies in sync with what it publishes.
+#
 # Requires the NPM_TOKEN secret (automation token of the publishing
 # account). Without it the publish job fails at the first npm publish.
 on:
   push:
     tags:
+      - 'v*'
       - 'npm-publish-v*'
   workflow_dispatch:
 
@@ -76,6 +84,21 @@ jobs:
         run: npx napi artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag must match the package.json version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # no tag context on dispatch; the equality is enforced on tag pushes
+            echo "dispatch: package.json version ${VERSION}"
+          else
+            TAG="${GITHUB_REF_NAME#v}"
+            TAG="${TAG#npm-publish-}"   # historical prefix keeps working
+            echo "tag: ${GITHUB_REF_NAME} (version part: ${TAG}), package.json version: ${VERSION}"
+            if [ "$TAG" != "$VERSION" ]; then
+              echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${VERSION}"
+              exit 1
+            fi
+          fi
       - name: Publish (platform packages, then corvid-node)
         run: npx napi pre-publish
         env:
