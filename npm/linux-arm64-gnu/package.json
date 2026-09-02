@@ -1,0 +1,34 @@
+{
+  "name": "corvid-node-linux-arm64-gnu",
+  "version": "0.3.2",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "index.linux-arm64-gnu.node",
+  "files": [
+    "index.linux-arm64-gnu.node"
+  ],
+  "description": "Node.js binding for the corvid embedded database — the engine compiled in, exposed as idiomatic OOP",
+  "keywords": [
+    "database",
+    "embedded",
+    "vector",
+    "search",
+    "ai",
+    "native"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/corvid-db/corvid-node.git"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

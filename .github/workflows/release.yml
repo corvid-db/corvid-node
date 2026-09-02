@@ -1,0 +1,82 @@
+name: Release npm
+
+# The napi-rs prebuilt publish flow (docs/PLAN.md §5): a tag push builds
+# the platform matrix, then one publish job collects every artifact via
+# `napi artifacts` and runs `napi pre-publish` — platform packages
+# (corvid-node-<platform>) first, then the root corvid-node facade.
+#
+# Requires the NPM_TOKEN secret (automation token of the publishing
+# account). Without it the publish job fails at the first npm publish.
+on:
+  push:
+    tags:
+      - 'npm-publish-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # darwin: both arches from the arm64 runner — x86_64-apple-darwin
+          # cross-compiles with the Xcode toolchain (macos-13 runners are
+          # retired; there is no x86_64 darwin runner left).
+          - target: aarch64-apple-darwin
+            runs-on: macos-latest
+          - target: x86_64-apple-darwin
+            runs-on: macos-latest
+          # linux: gnu only for v1 (docs/PLAN.md §5); arm64 leg is native.
+          - target: x86_64-unknown-linux-gnu
+            runs-on: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            runs-on: ubuntu-24.04-arm
+          - target: x86_64-pc-windows-msvc
+            runs-on: windows-latest
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      # npm install, not npm ci: same reason as ci.yml — the platform
+      # stubs are unpublished until this very workflow publishes them.
+      - run: npm install
+      - name: Build ${{ matrix.target }}
+        run: npx napi build --release --target ${{ matrix.target }} --js index-native.js --dts index-native.d.ts
+      - name: Upload binding
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.target }}
+          path: index.*.node
+          if-no-files-found: error
+
+  publish:
+    name: publish platform packages, then the root package
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+      - run: npm install
+      - name: Collect the matrix artifacts into npm/
+        run: npx napi artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish (platform packages, then corvid-node)
+        run: npx napi pre-publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

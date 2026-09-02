@@ -25,9 +25,11 @@ equality rules, TTL, transactions) each have a section there.
 npm i corvid-node
 ```
 
-Pending first publish: the package is not on npm yet — publishing waits
-on the platform packages existing first (docs/PLAN.md §5); until then,
-build from source.
+Pending first publish: the release pipeline is wired
+(`.github/workflows/release.yml` — a `npm-publish-v*` tag push builds
+the platform matrix and publishes `corvid-node-<platform>` then this
+package, docs/PLAN.md §5) but it waits on the repo's `NPM_TOKEN`
+secret being set. Until then, build from source.
 
 Prebuilt binaries (`optionalDependencies`) cover
 `darwin-arm64` / `darwin-x64` / `linux-x64-gnu` / `linux-arm64-gnu` /

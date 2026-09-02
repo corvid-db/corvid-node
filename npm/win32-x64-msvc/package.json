@@ -1,0 +1,31 @@
+{
+  "name": "corvid-node-win32-x64-msvc",
+  "version": "0.3.2",
+  "cpu": [
+    "x64"
+  ],
+  "main": "index.win32-x64-msvc.node",
+  "files": [
+    "index.win32-x64-msvc.node"
+  ],
+  "description": "Node.js binding for the corvid embedded database — the engine compiled in, exposed as idiomatic OOP",
+  "keywords": [
+    "database",
+    "embedded",
+    "vector",
+    "search",
+    "ai",
+    "native"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/corvid-db/corvid-node.git"
+  },
+  "os": [
+    "win32"
+  ]
+}
