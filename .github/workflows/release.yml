@@ -107,6 +107,14 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org/
       - run: npm install
+      # `napi artifacts` looks for a local ./artifacts directory; it does
+      # not download anything itself. Pull the matrix's bindings-* archives
+      # there (each containing index.<target>.node) with the official action.
+      - uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+          pattern: bindings-*
+          merge-multiple: true
       - name: Collect the matrix artifacts into npm/
         run: npx napi artifacts
         env:
