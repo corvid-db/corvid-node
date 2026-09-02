@@ -34,7 +34,7 @@ SURFACE="$ROOT/docs/SURFACE.tsv"
 ENGINE_REPO="corvid-db/corvid"
 
 # The committed N/A baseline for THIS binding (see (c) above).
-NA_BASELINE=156
+NA_BASELINE=155
 
 # ---- locate the engine pin ------------------------------------------------
 pin=""

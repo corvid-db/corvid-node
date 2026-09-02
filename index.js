@@ -414,6 +414,19 @@ class Collection {
     return call(this.#node.isEmpty, this.#node, []);
   }
 
+  /**
+   * DIRECT positional phrase search (engine v0.3.0; no query builder):
+   * documents whose `field` TEXT contains `phrase` as a consecutive,
+   * in-order run of analyzed tokens — stop words collapse out of
+   * adjacency (`'embedded the database'` matches `'embedded
+   * database'`). Most relevant first, ties by key, up to `k` rows as
+   * `{ key, doc, score }[]`; `score` is the BM25 phrase sum (not the
+   * builder's fused RRF scale). `k === 0` answers `[]` — inert.
+   */
+  phraseSearch(field, phrase, k) {
+    return call(() => this.#node.phraseSearch(field, phrase, k).map(rows), null, []);
+  }
+
   // indexes
 
   createScalarIndex(field) {

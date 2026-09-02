@@ -73,7 +73,7 @@ jobs:
       - run: npm install
       - name: Build native binding
         run: npx napi build --platform --release --js index-native.js --dts index-native.d.ts
-      - name: Golden suite (256 fixture lines through the OOP surface)
+      - name: Golden suite (267 fixture lines through the OOP surface)
         run: npx vitest run
       - name: Examples tour (six runnable programs, deterministic output)
         shell: bash # the for-loop is bash; the Windows default is pwsh

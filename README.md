@@ -9,7 +9,7 @@ synchronous OOP: `Db`, `Collection`, a fluent `Query` builder, and
 path — values map natively (see the value mapping below).
 
 Its correctness story is the engine's **golden suite**: the same
-256-line fixture files the C ABI smoke harness runs are replayed
+267-line fixture files the C ABI smoke harness runs are replayed
 against this binding's public API on every CI run
 (`test/golden.spec.ts`).
 
@@ -134,7 +134,7 @@ this gate, not in a user's bug report.
 ```sh
 npm install                 # @napi-rs/cli + vitest
 npm run build               # build the native binary for this platform
-npm test                    # the golden suite (256 lines)
+npm test                    # the golden suite (267 lines)
 npm run lint                # cargo fmt --check + clippy -D warnings
 ```
 

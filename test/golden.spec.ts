@@ -516,6 +516,17 @@ function rowKeys(rows: { key: unknown }[]): string[] {
   return rows.map((r) => String(r.key));
 }
 
+// Map key enumeration in the engine's order: ascending key-BYTE order
+// (the BTreeMap iteration order corvid_value_map_keys hands the C ABI;
+// JS object keys carry no order contract, so the sort is explicit).
+// Non-maps answer [] — inert, the wrong-type convention.
+function mapKeys(v: unknown): string[] {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return [];
+  return Object.keys(v as Record<string, unknown>).sort((a, b) =>
+    Buffer.compare(Buffer.from(a, 'utf8'), Buffer.from(b, 'utf8')),
+  );
+}
+
 function checkKeys(keys: string[], expected: string, ctx: string): void {
   const want = listBody(expected);
   const wanted = want === '' ? [] : splitTop(want);
@@ -646,6 +657,15 @@ function runLine(s: Scenario, op: string, args: string[], expected: string, ctx:
     const obj = s.rt(a[0]) as Record<string, unknown>;
     obj[a[1]] = parseLiteral(a[2]);
     expect(Object.keys(obj).length, `${ctx}: map size`).toBe(parseInt(expected, 10));
+    return;
+  }
+  if (op === 'VMAP_KEYS' || op === 'GET_KEYS') {
+    // The v0.3.0 key-iterator ops: VMAP_KEYS over a storage-round-tripped
+    // literal (s.rt inserts + gets), GET_KEYS over the stored document —
+    // ascending key-byte order; empty map, non-maps, scalars answer [].
+    const v = op === 'GET_KEYS' ? s.docs().get(a[0]) : s.rt(a[0]);
+    if (v === null) throw new Error(`${ctx}: ${op} on an absent document`);
+    checkKeys(mapKeys(v), expected, ctx);
     return;
   }
   if (op === 'NULLFREES') {
@@ -851,6 +871,17 @@ function runLine(s: Scenario, op: string, args: string[], expected: string, ctx:
   if (op === 'QTEXT') {
     const rows = s.docs().query().text(a[0], textBody(a[1]), parseInt(a[2], 10)).run();
     checkKeys(rowKeys(rows), expected, ctx);
+    return;
+  }
+  if (op === 'PHRASE' || op === 'PHRASE_K0') {
+    // The v0.3.0 direct positional search through phraseSearch():
+    // order-sensitive adjacency, BM25 phrase scores in the suffix;
+    // PHRASE_K0 is the inert k==0 shape — an EMPTY result, no error.
+    const rows = s.docs().phraseSearch(a[0], textBody(a[1]), parseInt(a[2], 10));
+    const { keyPart, suffix } = splitExpected(expected);
+    checkKeys(rowKeys(rows), keyPart, ctx);
+    checkScores(rows.map((r) => r.score), suffix, ctx);
+    if (op === 'PHRASE_K0') expect(rows.length, `${ctx}: k == 0 must answer empty`).toBe(0);
     return;
   }
   if (op === 'HYBRID' || op === 'HYBRID_F') {
@@ -1161,8 +1192,8 @@ test.each(FILES)('golden suite: %s', (file) => {
   runScenario(file);
 });
 
-test('golden suite totals (256 lines)', () => {
+test('golden suite totals (267 lines)', () => {
   const total = scenarios.reduce((n, x) => n + parseInt(x.split('lines=')[1], 10), 0);
   expect(scenarios.length, 'all fixture files ran').toBe(FILES.length);
-  expect(total, 'total executable fixture lines').toBe(256);
+  expect(total, 'total executable fixture lines').toBe(267);
 });
