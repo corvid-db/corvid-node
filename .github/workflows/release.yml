@@ -146,4 +146,7 @@ jobs:
       - name: Publish (platform packages, then corvid-node)
         # shells out to plain `npm publish`, which picks up the OIDC token
         # by itself (docs.npmjs.com/trusted-publishers); no NODE_AUTH_TOKEN
-        run: npx napi pre-publish
+        # --gh-release is omitted: the binding has no per-repo GitHub
+        # release — artifacts live on the engine repo's release; pre-publish
+        # demands its own release-commit convention when it is enabled.
+        run: npx napi pre-publish --tag-style npm
