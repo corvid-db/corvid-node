@@ -34,7 +34,7 @@ the counted total instead of silently passing).
 Two architectures were on the table:
 
 1. **(chosen)** A Rust napi crate that links the engine crate directly
-   (`corvid-db = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.3.2" }`
+   (`corvid-db = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.3.3" }`
    — the engine package is `corvid-db` with lib ident `corvid`; bare
    `corvid` on crates.io is an unrelated crate) and exposes the OOP
    surface through napi classes.
