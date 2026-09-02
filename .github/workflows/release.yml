@@ -68,6 +68,19 @@ jobs:
       - run: npm install
       - name: Build ${{ matrix.target }}
         run: npx napi build --release --target ${{ matrix.target }} --js index-native.js --dts index-native.d.ts
+      # The crate's cdylib is named libcorvid_node (crate name), but the
+      # napi artifacts pipeline expects index.<target>.node — copy it into
+      # place explicitly (napi build does not rename cross-named cdylibs;
+      # the pre-OIDC dry-run passed on a stale local index.*.node).
+      - name: Normalize the cdylib name for the artifacts pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          ext="so"; case "${{ matrix.target }}" in *-apple-darwin) ext="dylib";; *-windows*) ext="dll";; esac
+          src="target/${{ matrix.target }}/release"
+          if [ "$ext" = "dll" ]; then f="$src/corvid_node.dll"; else f="$src/libcorvid_node.$ext"; fi
+          [ -f "$f" ] || f="$src/index.$ext"
+          cp "$f" "index.${{ matrix.target }}.node"
       - name: Upload binding
         uses: actions/upload-artifact@v4
         with:
