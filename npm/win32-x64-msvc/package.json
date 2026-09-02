@@ -1,14 +1,14 @@
 {
   "name": "corvid-node-win32-x64-msvc",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "cpu": [
     "x64"
   ],
-  "main": "index.win32-x64-msvc.node",
+  "main": "index-native.win32-x64-msvc.node",
   "files": [
-    "index.win32-x64-msvc.node"
+    "index-native.win32-x64-msvc.node"
   ],
-  "description": "Node.js binding for the corvid embedded database — the engine compiled in, exposed as idiomatic OOP",
+  "description": "Node.js binding for the corvid embedded database \u2014 the engine compiled in, exposed as idiomatic OOP",
   "keywords": [
     "database",
     "embedded",

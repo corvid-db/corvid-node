@@ -51,8 +51,9 @@ function loadNative() {
     return require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);
   }
   const key = platformKey();
-  // 1. A sibling binary built locally (`npm run build`).
-  const local = path.join(__dirname, `index.${key}.node`);
+  // 1. A sibling binary built locally (`npm run build`) — named by napi's
+  // binaryName (index-native), never `index.*` (that is THIS file).
+  const local = path.join(__dirname, `index-native.${key}.node`);
   if (fs.existsSync(local)) {
     return require(local);
   }

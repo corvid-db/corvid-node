@@ -71,7 +71,7 @@ jobs:
       # The crate's cdylib is named libcorvid_node (crate name) and napi
       # build does not rename cross-named cdylibs — copy it into place
       # explicitly, named by platformArchABI (napi's convention), NOT the
-      # rust triple: index.darwin-arm64.node, not index.aarch64-apple-darwin.node.
+      # rust triple: index-native.darwin-arm64.node, not index-native.aarch64-apple-darwin.node.
       - name: Normalize the cdylib name for the artifacts pipeline
         shell: bash
         run: |
@@ -89,12 +89,12 @@ jobs:
           src="target/$t/release"
           if [ "$ext" = "dll" ]; then f="$src/corvid_node.dll"; else f="$src/libcorvid_node.$ext"; fi
           [ -f "$f" ] || { echo "::error::$f not found"; ls -la "$src" | head; exit 1; }
-          cp "$f" "index.$abi.node"
+          cp "$f" "index-native.$abi.node"
       - name: Upload binding
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.target }}
-          path: index.*.node
+          path: index-native.*.node
           if-no-files-found: error
 
   publish:
@@ -118,7 +118,7 @@ jobs:
       - run: npm install
       # `napi artifacts` looks for a local ./artifacts directory; it does
       # not download anything itself. Pull the matrix's bindings-* archives
-      # there (each containing index.<target>.node) with the official action.
+      # there (each containing index-native.<abi>.node) with the official action.
       - uses: actions/download-artifact@v7
         with:
           path: artifacts

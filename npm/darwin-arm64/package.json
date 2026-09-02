@@ -1,14 +1,14 @@
 {
   "name": "corvid-node-darwin-arm64",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "cpu": [
     "arm64"
   ],
-  "main": "index.darwin-arm64.node",
+  "main": "index-native.darwin-arm64.node",
   "files": [
-    "index.darwin-arm64.node"
+    "index-native.darwin-arm64.node"
   ],
-  "description": "Node.js binding for the corvid embedded database — the engine compiled in, exposed as idiomatic OOP",
+  "description": "Node.js binding for the corvid embedded database \u2014 the engine compiled in, exposed as idiomatic OOP",
   "keywords": [
     "database",
     "embedded",

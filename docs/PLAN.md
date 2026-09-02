@@ -169,3 +169,15 @@ Documented corners:
 | `CorvidFloat` marker class | typed-float escape hatch for the Int/Float collapse (CAS/unique/group-keys) |
 | Counter + Arc exclusivity for `compact` | mirrors the ABI §4.13 gate exactly; pinned by admin.txt |
 | napi-build pinned at 2.x, napi/napi-derive at 3.x | current crates.io stable lines |
+
+## Release-layout fix (2026-09-02)
+
+`napi.binaryName` is `index-native` (was `index`): napi's generated root
+loader collides with the hand-written OOP API at `index.js` — `napi
+artifacts`/`pre-publish` overwrite it at publish time, which would have
+shipped the raw bindings as the package entry. Under the new name napi
+owns `index-native.js` (gitignored, internal) and the platform binaries
+`index-native.<abi>.node`; the API file and the published tarball are
+untouched by the toolchain. The five platform packages publish 0.3.3
+manually once (npm has no pending-publisher mechanism), then trusted
+publishers own every future release.

@@ -1,7 +1,7 @@
 {
   "name": "corvid-node",
   "version": "0.3.3",
-  "description": "Node.js binding for the corvid embedded database — the engine compiled in, exposed as idiomatic OOP",
+  "description": "Node.js binding for the corvid embedded database \u2014 the engine compiled in, exposed as idiomatic OOP",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -25,14 +25,14 @@
     "node": ">= 20"
   },
   "optionalDependencies": {
-    "corvid-node-darwin-arm64": "0.3.2",
-    "corvid-node-darwin-x64": "0.3.2",
-    "corvid-node-linux-arm64-gnu": "0.3.2",
-    "corvid-node-linux-x64-gnu": "0.3.2",
-    "corvid-node-win32-x64-msvc": "0.3.2"
+    "corvid-node-darwin-arm64": "0.3.3",
+    "corvid-node-darwin-x64": "0.3.3",
+    "corvid-node-linux-arm64-gnu": "0.3.3",
+    "corvid-node-linux-x64-gnu": "0.3.3",
+    "corvid-node-win32-x64-msvc": "0.3.3"
   },
   "napi": {
-    "binaryName": "index",
+    "binaryName": "index-native",
     "packageName": "corvid-node",
     "npmDir": "npm",
     "rootPublisher": "npm",
