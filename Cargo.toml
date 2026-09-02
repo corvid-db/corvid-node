@@ -19,8 +19,10 @@ napi = { version = "3", features = ["napi8", "compat-mode"] }
 napi-derive = "3"
 
 # The engine, pinned to the exact release tag (docs/PLAN.md §2: the
-# binding pins exact engine tags; corvid is not on crates.io).
-corvid = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.3.2" }
+# binding pins exact engine tags; the engine PACKAGE is corvid-db —
+# bare `corvid` is an unrelated crates.io crate — its LIB ident is
+# corvid, so `use corvid::…` is unchanged).
+corvid-db = { git = "https://github.com/corvid-db/corvid.git", tag = "v0.3.2" }
 
 [build-dependencies]
 napi-build = "2"
