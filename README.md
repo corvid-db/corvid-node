@@ -85,16 +85,13 @@ exported as `ErrorCode`).
 ## Examples
 
 Six runnable programs in [`examples/`](examples/) — one per concept,
-deterministic output, executed on every CI leg:
-
-| File | What it shows |
-| --- | --- |
-| `quickstart.js` | open, insert 3 docs, kNN vector query, print |
-| `hybrid.js` | filter + vector + BM25, RRF fusion, MMR rerank, limit |
-| `vector-index.js` | in-memory / on-disk / binary-quantized HNSW vs exact, reopen |
-| `text-search.js` | BM25 ranking, English + CJK (bigram segmentation) |
-| `graph.js` | link/neighbors/traverse + the delete cascade |
-| `geo.js` | radius / bbox / nearest-k over real coordinates (haversine km) |
+with deterministic output, executed on every CI leg: the quickstart
+(open, insert, kNN), **hybrid** (filter + vector + BM25, RRF fusion,
+MMR rerank), **vector-index** (in-memory / on-disk /
+binary-quantized HNSW vs exact, across a reopen), **text-search**
+(BM25, English + CJK bigram segmentation), **graph**
+(link/neighbors/traverse + the delete cascade), and **geo**
+(radius / bbox / nearest-k over real coordinates).
 
 ```sh
 npm run build && node examples/hybrid.js
