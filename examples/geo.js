@@ -18,6 +18,7 @@
 
 'use strict';
 
+// docs:begin:geo
 const { Db } = require('..');
 
 const db = Db.openMemory();
@@ -48,3 +49,4 @@ console.log(
 
 places.close();
 db.close();
+// docs:end:geo

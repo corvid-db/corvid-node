@@ -24,6 +24,7 @@
 
 'use strict';
 
+// docs:begin:vector_index
 const { rmSync } = require('node:fs');
 const { join } = require('node:path');
 const { tmpdir } = require('node:os');
@@ -82,3 +83,4 @@ docs.close();
 db.close();
 
 rmSync(PATH, { force: true });
+// docs:end:vector_index

@@ -12,6 +12,7 @@
 
 'use strict';
 
+// docs:begin:graph
 const { Db } = require('..');
 
 const db = Db.openMemory();
@@ -46,3 +47,4 @@ console.log('traverse(ga, 2 hops) after'.padEnd(36), fmt(nodes.traverse('ga', 'p
 
 nodes.close();
 db.close();
+// docs:end:graph

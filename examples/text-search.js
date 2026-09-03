@@ -19,6 +19,7 @@
 
 'use strict';
 
+// docs:begin:text_search
 const { Db } = require('..');
 
 const db = Db.openMemory();
@@ -56,3 +57,4 @@ phrase('leaps over a sleeping', 'phrase stop words collapsed:');
 
 notes.close();
 db.close();
+// docs:end:text_search
