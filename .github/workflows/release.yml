@@ -128,6 +128,40 @@ jobs:
         run: npx napi artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # ---- publish: EXPLICIT npm publish per package ---------------------
+      # Why not `napi pre-publish`: its dynamically-constructed, execSync'd
+      # publish invocations stopped authenticating against npm's trusted
+      # publishing (2026-09-02/03: every tag since v0.3.4 died with
+      # E404-masked permission errors on the FIRST platform package, while
+      # plain `npm publish` steps — corvid-js, same org, same day —
+      # exchange the OIDC token fine). This is the same explicit shape
+      # corvid-js uses: npm's own CLI performs the OIDC exchange, nothing
+      # shells it out from under us. napi stays for what it is good at —
+      # `napi artifacts` collecting the matrix builds into npm/ — and the
+      # version sync pre-publish used to do (platform package.json
+      # versions + the root's optionalDependencies) is the small node
+      # script below, in-repo and reviewable.
+      - name: Sync versions into the platform packages + optionalDependencies
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const root = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const version = root.version;
+          const optional = {};
+          for (const entry of fs.readdirSync('npm', { withFileTypes: true })) {
+            if (!entry.isDirectory()) continue;
+            const pkgPath = `npm/${entry.name}/package.json`;
+            if (!fs.existsSync(pkgPath)) continue;
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            pkg.version = version;
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+            optional[pkg.name] = version;
+          }
+          root.optionalDependencies = {};
+          for (const n of Object.keys(optional).sort()) root.optionalDependencies[n] = optional[n];
+          fs.writeFileSync('package.json', JSON.stringify(root, null, 2) + '\n');
+          console.log('synced', Object.keys(optional).join(', '), '->', version);
+          EOF
       - name: Tag must match the package.json version
         run: |
           VERSION=$(node -p "require('./package.json').version")
@@ -143,10 +177,32 @@ jobs:
               exit 1
             fi
           fi
-      - name: Publish (platform packages, then corvid-node)
-        # shells out to plain `npm publish`, which picks up the OIDC token
-        # by itself (docs.npmjs.com/trusted-publishers); no NODE_AUTH_TOKEN
-        # --gh-release is omitted: the binding has no per-repo GitHub
-        # release — artifacts live on the engine repo's release; pre-publish
-        # demands its own release-commit convention when it is enabled.
-        run: npx napi pre-publish --tag-style npm
+      - name: Publish the platform packages
+        run: |
+          set -euo pipefail
+          for pkg in npm/*/; do
+            [ -f "$pkg/package.json" ] || continue
+            echo "::group::publish ${pkg}"
+            (cd "$pkg" && npm publish --access public)
+            echo "::endgroup::"
+          done
+      - name: Publish the root package (corvid-node)
+        run: npm publish --access public
+      # The partial-publish trap: a red run after a green publish (the
+      # 0.3.3 cycle) or a mid-loop failure leaves the registry in a
+      # half-versioned state. Verify EVERY package resolves at the tag's
+      # version before the job goes green.
+      - name: Verify every package is live at the tag's version
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          pkgs="corvid-node"
+          for pkg in npm/*/; do
+            [ -f "$pkg/package.json" ] || continue
+            pkgs="$pkgs $(node -p "require('./${pkg}package.json').name")"
+          done
+          for p in $pkgs; do
+            LIVE=$(npm view "$p@$VERSION" version)
+            [ "$LIVE" = "$VERSION" ] || { echo "::error::$p@$VERSION is not live (npm view says '$LIVE')"; exit 1; }
+            echo "$p@$VERSION live"
+          done
